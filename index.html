@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Smart Baccarat Killer</title>
+
+<style>
+:root{
+  --bg-main:radial-gradient(circle at top,#1d2233,#0a0d14);
+  --glass:linear-gradient(180deg,rgba(25,32,55,.9),rgba(10,14,28,.9));
+  --border:rgba(120,140,255,.18);
+  --gold:#ffd86b;
+  --blue:#4da3ff;
+  --red:#ff6b6b;
+  --green:#4dffb0;
+}
+
+body{
+  font-family:"Segoe UI","Inter",Tahoma,sans-serif;
+  background:var(--bg-main);
+  color:#eef1ff;
+  margin:0;
+  letter-spacing:.2px
+}
+
+/* ===== LOGIN ===== */
+#loginBox{
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg-main);
+  z-index:9999
+}
+.loginPanel{
+  background:var(--glass);
+  padding:30px 34px;
+  border-radius:18px;
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 20px 50px rgba(0,0,0,.7);
+  width:320px;
+  text-align:center;
+  backdrop-filter:blur(6px)
+}
+.loginPanel h3{
+  margin:0 0 18px;
+  font-weight:600;
+  letter-spacing:.5px
+}
+.loginPanel input{
+  width:100%;
+  padding:12px 14px;
+  margin:7px 0;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#0b1020;
+  color:#fff;
+  font-size:15px;
+  outline:none
+}
+.loginPanel input:focus{
+  border-color:#6a7dff;
+  box-shadow:0 0 0 2px rgba(106,125,255,.25)
+}
+.loginPanel button{
+  width:100%;
+  margin-top:14px;
+  padding:13px;
+  font-size:15px;
+  font-weight:600;
+  background:linear-gradient(135deg,#3b7cff,#6aa7ff);
+  border:none;
+  border-radius:12px;
+  color:#fff;
+  cursor:pointer
+}
+.loginErr{color:#ff7a7a;font-size:13px;margin-top:10px}
+
+/* ===== PROGRAM ===== */
+#app{display:none}
+
+header{
+  background:linear-gradient(90deg,#0f1426,#1a2140);
+  padding:18px;
+  text-align:center;
+  box-shadow:
+    0 4px 14px rgba(0,0,0,.7),
+    inset 0 -1px 0 var(--border)
+}
+header h2{
+  margin:0;
+  font-weight:600;
+  letter-spacing:.6px
+}
+header div{
+  font-size:13px;
+  color:#b7c4ff
+}
+.expire{
+  margin-top:6px;
+  font-size:12px;
+  color:var(--gold)
+}
+
+button{
+  padding:15px 28px;
+  margin:6px;
+  font-size:15px;
+  font-weight:600;
+  border:none;
+  border-radius:14px;
+  cursor:pointer
+}
+.player{background:linear-gradient(135deg,#2b7cff,#5fa8ff)}
+.banker{background:linear-gradient(135deg,#ff5f5f,#ff8a8a)}
+.tie{background:linear-gradient(135deg,#39e7a0,#6bffc5)}
+.util{background:linear-gradient(135deg,#5b627a,#7a84a6)}
+
+.section{
+  padding:20px;
+  max-width:1000px;
+  margin:auto
+}
+
+.summary{
+  margin-top:14px;
+  padding:14px;
+  background:var(--glass);
+  border-left:4px solid var(--gold);
+  border-radius:14px;
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 10px 25px rgba(0,0,0,.55);
+  font-size:14px
+}
+
+.roadBox{
+  margin-top:16px;
+  padding:14px;
+  background:var(--glass);
+  border-radius:16px;
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 10px 25px rgba(0,0,0,.55);
+  display:inline-block;   /* ล็อคขนาดตาม .road */
+}
+
+
+.roadBox b{
+  display:block;
+  margin-bottom:6px;
+  color:var(--gold)
+}
+
+.road{
+  display:inline-grid;        /* ไม่ให้ยืดเต็ม flex */
+  grid-auto-flow:column;      /* ลง 6 ช่องก่อนแล้วขึ้นคอลัมน์ */
+  grid-template-rows:repeat(6,26px);
+  gap:6px;
+}
+
+
+.dot{
+  width:26px;height:26px;
+  border-radius:50%
+}
+.dot.B{background:#ff5a5a}
+.dot.P{background:#2a7fff}
+.dot.T{background:#42e695}
+
+.lines{margin-top:18px}
+.line{
+  margin:14px 0;
+  padding:12px 14px;
+  background:var(--glass);
+  border-radius:16px
+}
+.best{box-shadow:0 0 18px rgba(77,255,176,.45)}
+
+.history{
+  display:grid;
+  grid-template-columns:repeat(12,22px);
+  gap:6px;
+  margin-top:8px
+}
+.mark{
+  width:22px;
+  height:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:13px;
+  font-weight:900;
+  border-radius:6px;
+  box-shadow:
+    0 2px 6px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(255,255,255,.25);
+  transition:.2s;
+}
+
+.hit{
+  background:linear-gradient(145deg,#36ff8f,#14c768);
+  color:#003d1f;
+  box-shadow:
+    0 0 8px rgba(54,255,143,.7),
+    0 2px 6px rgba(0,0,0,.6);
+}
+
+.miss{
+  background:linear-gradient(145deg,#ff6b6b,#c81d1d);
+  color:#fff;
+  box-shadow:
+    0 0 8px rgba(255,0,0,.6),
+    0 2px 6px rgba(0,0,0,.6);
+}
+
+.hit:hover,
+.miss:hover{
+  transform:scale(1.15);
+}
+
+.betB{color:#ff9b9b;font-weight:700}
+.betP{color:#8ec5ff;font-weight:700}
+.betN{color:#888}
+
+@keyframes blinkScale{
+  0%{transform:scale(1.8);opacity:1}
+  50%{transform:scale(1.8);opacity:.25}
+  100%{transform:scale(1.8);opacity:1}
+}
+.blink{display:inline-block;animation:blinkScale 1s infinite}
+/* ===== DQN BOX TOP ===== */
+.dqnBox{
+  margin:18px auto;
+  max-width:1000px;
+  padding:18px 20px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#ff00cc,#3333ff);
+  color:#fff;
+  font-size:18px;
+  font-weight:700;
+  text-align:center;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.2),
+    0 15px 35px rgba(0,0,0,.6),
+    0 0 25px rgba(255,0,200,.6);
+  letter-spacing:.5px;
+
+  position:relative;   /* ✅ ต้องอยู่ในนี้ */
+  overflow:hidden;     /* ✅ ต้องอยู่ในนี้ */
+}
+
+.dqnBox::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg,
+    transparent 40%,
+    rgba(255,255,255,.15),
+    transparent 60%);
+  transform:translateX(-100%);
+  animation:shine 3s infinite;
+}
+
+@keyframes shine{
+  to{ transform:translateX(100%); }
+}
+
+.assistBox{
+  margin:12px auto 0;
+  max-width:1000px;
+  padding:16px 20px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#1e293b,#0f172a);
+  color:#fff;
+  font-size:17px;
+  font-weight:700;
+  text-align:center;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.1),
+    0 10px 30px rgba(0,0,0,.6);
+  display:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="loginBox">
+  <div class="loginPanel">
+    <h3>🔐 Premium Login</h3>
+    <input id="user" placeholder="User">
+    <input id="pass" type="password" placeholder="Password">
+    <button onclick="login()">เข้าสู่ระบบ</button>
+    <div id="loginErr" class="loginErr"></div>
+  </div>
+</div>
+
+<div id="app">
+<header>
+
+  <h2 style="
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  font-size:28px;
+  letter-spacing:.8px;
+">
+  <img src="robot.png"
+       style="
+         height:70px;
+         width:auto;
+         image-rendering:auto;
+         filter:
+           drop-shadow(0 0 12px rgba(77,163,255,.8))
+           drop-shadow(0 0 25px rgba(255,0,200,.4));
+       ">
+  🤖 Smart Baccarat Killer
+</h2>
+
+  <div>Professional Analysis System</div>
+  <div class="expire">⏳ วันหมดอายุ : 29 มีนาคม พ.ศ. 2569</div>
+
+</header>
+
+<div class="dqnBox" id="dqnBox"></div>
+<div class="assistBox" id="assistBox"></div>
+
+<div class="section">
+<button class="player" onclick="add('P')">PLAYER</button>
+<button class="banker" onclick="add('B')">BANKER</button>
+<button class="tie" onclick="add('T')">TIE</button>
+<button class="util" onclick="undo()">UNDO</button>
+<button class="util" onclick="clearAll()">CLEAR</button>
+</div>
+
+<div class="section" style="display:flex;gap:20px;align-items:flex-start;flex-wrap:nowrap">
+<div>
+  <div id="summary" class="summary"></div>
+  <div class="roadBox">
+    <b>บีดโรด</b>
+    <div id="road" class="road"></div>
+  </div>
+</div>
+<div class="lines" id="lines" style="flex:1"></div>
+</div>
+</div>
+
+<script>
+/* ===== EXPIRATION (เพิ่มอย่างเดียว) ===== */
+const expireDate=new Date("2026-03-29T23:59:59");
+if(new Date()>expireDate){
+  document.body.innerHTML=
+  "<h2 style='color:#ff6b6b;text-align:center;margin-top:20%'>⛔ โปรแกรมหมดอายุแล้ว</h2>";
+}
+
+/* ===== LOGIN ===== */
+function login(){
+  if(user.value==="1234" && pass.value==="1234"){
+    loginBox.style.display="none";
+    app.style.display="block";
+    render();
+  }else{
+    loginErr.textContent="User หรือ Password ไม่ถูกต้อง";
+  }
+}
+
+/* ===== LOGIC เดิม 100% ===== */
+let road=[];
+
+// 🔥 ใส่ตรงนี้
+let isRebuild = false;
+
+// ===== STATE INTELLIGENCE ENGINE =====
+
+let stateEngine = {
+  transition: {
+    P: {P:0, B:0},
+    B: {P:0, B:0}
+  },
+  streakStats: {
+    P: {continue:0, break:0},
+    B: {continue:0, break:0}
+  }
+};
+let lines = Array.from({length:30},() => ({
+  hit:0,miss:0,history:[],bet:null,pending:null,pct:0
+}));
+
+/* ===== STATE-AWARE DQN ===== */
+let dqn = {
+  q: {},
+  alpha: 0.1,
+  gamma: 0.9,
+  epsilon: 0.2,
+  lastState: null,
+  lastAction: null
+};
+
+dqn.lastLine = null;   // ✅ วางตรงนี้เลย
+
+dqn.stats = {
+  hit: 0,
+  miss: 0,
+  total: 0,
+  pct: 0,
+  history: []
+};
+
+const summary=document.getElementById('summary');
+const linesEl=document.getElementById('lines');
+const roadEl=document.getElementById('road');
+
+function add(r){
+
+// ===== STATE-AWARE DQN LEARNING (LINE-BASED) =====
+if(!isRebuild && dqn.lastState !== null && dqn.lastLine !== null){
+
+  let reward = 0;
+  let line = lines[dqn.lastLine];
+
+  if(line && line.pending){
+    reward = (line.pending === r) ? 1 : -1;
+  }
+
+  // ===== ensure Q =====
+  if(!dqn.q[dqn.lastState]){
+    dqn.q[dqn.lastState] =Array(30).fill(0);
+  }
+
+  let newState = getState(road);
+
+  if(!dqn.q[newState]){
+    dqn.q[newState] = Array(30).fill(0);
+  }
+
+  let nextQ = dqn.q[newState];
+  let maxNext = nextQ.length ? Math.max(...nextQ) : 0;
+
+  let currentQ = dqn.q[dqn.lastState][dqn.lastLine];
+
+  dqn.q[dqn.lastState][dqn.lastLine] =
+    currentQ +
+    dqn.alpha * (reward + dqn.gamma * maxNext - currentQ);
+
+  // ✅ FIX: กัน lastAction = null
+  if(dqn.lastAction){
+    if(dqn.lastAction === r){
+      dqn.stats.hit++;
+      dqn.stats.history.push('H');
+    }else{
+      dqn.stats.miss++;
+      dqn.stats.history.push('M');
+    }
+  }
+
+  if(dqn.stats.history.length > 48){
+    dqn.stats.history.shift();
+  }
+
+  dqn.stats.total = dqn.stats.hit + dqn.stats.miss;
+  dqn.stats.pct = dqn.stats.total
+    ? Math.round((dqn.stats.hit / dqn.stats.total) * 100)
+    : 0;
+}
+
+
+// ===== ระบบเดิม (ห้ามลบ) =====
+lines.forEach(l=>{
+  if(l.pending){
+    l.pending===r?(l.hit++,l.history.push('H')):(l.miss++,l.history.push('M'));
+  }
+});
+
+road.push(r);
+
+
+// ===== UPDATE MARKOV =====
+if(road.length >= 2){
+  let prev = road[road.length-2];
+  if(prev === 'P' || prev === 'B'){
+    if(r === 'P' || r === 'B'){
+      stateEngine.transition[prev][r]++;
+    }
+  }
+}
+
+
+// ===== UPDATE STREAK =====
+if(road.length >= 2){
+  let prev = road[road.length-2];
+
+  if((prev==='P'||prev==='B') && (r==='P'||r==='B')){
+    if(r===prev){
+      stateEngine.streakStats[prev].continue++;
+    }else{
+      stateEngine.streakStats[prev].break++;
+    }
+  }
+}
+
+
+// ===== predict =====
+predict().forEach((p,i)=>lines[i].bet=lines[i].pending=p);
+
+
+// ===== STATE-AWARE DQN DECISION =====
+
+// 🔥 Dynamic Epsilon + Winrate Adaptive (เวอร์ชั่นโปร)
+dqn.epsilon = Math.max(
+  0.05,
+  Math.min(
+    0.25,
+    0.2 - road.length * 0.002 + (50 - dqn.stats.pct) * 0.002
+  )
+);
+
+let state = getState(road);
+
+// ===== ensure Q (PRO VERSION) =====
+if(!dqn.q[state]){
+
+  // 🔥 สุ่มค่าเริ่มต้น กัน AI bias ไปสายเดิม
+  dqn.q[state] = Array(30)
+    .fill(0)
+    .map(()=> (Math.random()-0.5)*0.02)
+
+}
+
+let lineIndex;
+
+// ===== epsilon-greedy =====
+if(Math.random() < dqn.epsilon){
+
+  lineIndex = Math.floor(Math.random() * 30);
+
+}else{
+
+  let qArr = dqn.q[state];
+  let maxQ = Math.max(...qArr);
+
+  // กันค้าง
+  let candidates = qArr
+    .map((v,i)=> v === maxQ ? i : null)
+    .filter(v => v !== null);
+
+  lineIndex = candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+
+// ===== action =====
+let action = lines[lineIndex]?.bet;
+
+if(!action){
+  action = Math.random() < 0.5 ? 'P' : 'B';
+}
+
+
+// ===== STATE ASSIST =====
+if(Math.round(dqn.stats.pct) === 50){
+  let assist = stateAssistDecision();
+  if(assist){
+    action = assist;
+  }
+}
+
+
+// ===== ANTI-STUCK =====
+let last3 = dqn.stats.history.slice(-3);
+if(last3.length === 3 && last3.every(x => x === 'M')){
+  action = action === 'B' ? 'P' : 'B';
+}
+
+
+/// ===== SAVE =====
+dqn.lastState = state;
+dqn.lastAction = action;
+dqn.lastLine = lineIndex;
+
+// ===== render =====
+render();
+}
+
+
+// ===== UNDO =====
+function undo(){
+  if(!road.length) return;
+
+  road.pop();           // ลบจริง
+  rebuildFromRoad();    // rebuild แบบ safe
+}
+
+// ===== CLEAR ALL =====
+function clearAll(){
+
+  road = [];
+
+  lines = Array.from({ length: 30 }, () => ({
+    hit: 0,
+    miss: 0,
+    history: [],
+    bet: null,
+    pending: null,
+    pct: 0
+  }));
+
+  dqn.q = {};
+  dqn.lastState = null;
+  dqn.lastAction = null;
+  dqn.lastLine = null;
+
+  dqn.stats = {
+    hit: 0,
+    miss: 0,
+    total: 0,
+    pct: 0,
+    history: []
+  };
+
+  stateEngine = {
+    transition:{ P:{P:0,B:0}, B:{P:0,B:0} },
+    streakStats:{ P:{continue:0,break:0}, B:{continue:0,break:0} }
+  };
+
+  render();
+}
+
+
+// ===== REBUILD FROM ROAD =====
+function rebuildFromRoad(){
+
+  let history = [...road];
+
+  // 🔥 reset ทุกอย่าง
+  lines = Array.from({ length: 30 }, () => ({
+    hit: 0,
+    miss: 0,
+    history: [],
+    bet: null,
+    pending: null,
+    pct: 0
+  }));
+
+  dqn.q = {};
+  dqn.lastState = null;
+  dqn.lastAction = null;
+  dqn.lastLine = null;
+
+  dqn.stats = {
+    hit: 0,
+    miss: 0,
+    total: 0,
+    pct: 0,
+    history: []
+  };
+
+  stateEngine = {
+    transition:{ P:{P:0,B:0}, B:{P:0,B:0} },
+    streakStats:{ P:{continue:0,break:0}, B:{continue:0,break:0} }
+  };
+
+  // 🔥 สำคัญ: ใช้ road เดิมเลย (ไม่ล้าง)
+  let tempRoad = [];
+
+  history.forEach(r=>{
+
+    // ===== จำลองแบบ "ไม่ใช้ DQN" =====
+    tempRoad.push(r);
+
+    // update line
+    lines.forEach(l=>{
+      if(l.pending){
+        l.pending===r?(l.hit++,l.history.push('H')):(l.miss++,l.history.push('M'));
+      }
+    });
+
+    // predict ใหม่
+    road = tempRoad;
+    predict().forEach((p,i)=>lines[i].bet=lines[i].pending=p);
+
+    // ===== update markov =====
+    if(tempRoad.length >= 2){
+      let prev = tempRoad[tempRoad.length-2];
+      if(prev==='P'||prev==='B'){
+        if(r==='P'||r==='B'){
+          stateEngine.transition[prev][r]++;
+        }
+      }
+    }
+
+    // ===== update streak =====
+    if(tempRoad.length >= 2){
+      let prev = tempRoad[tempRoad.length-2];
+      if((prev==='P'||prev==='B') && (r==='P'||r==='B')){
+        if(r===prev){
+          stateEngine.streakStats[prev].continue++;
+        }else{
+          stateEngine.streakStats[prev].break++;
+        }
+      }
+    }
+
+  });
+
+  road = tempRoad;
+
+  render();
+}
+
+function predict(){
+
+  let p = road.filter(x=>x==='P').length;
+  let b = road.filter(x=>x==='B').length;
+  let last = road.at(-1);
+
+  let r = [];
+
+  // ===== ของเดิม 6 สาย =====
+  r[0] = b>p ? 'B':'P';
+  r[1] = last || null;
+  r[2] = last ? (last==='B'?'P':'B') : null;
+  r[3] = b>=p ? 'B':'P';
+
+  let s=1;
+  for(let i=road.length-1;i>0;i--){
+    if(road[i]===road[i-1]) s++;
+    else break;
+  }
+
+  r[4] = s>=2 ? last : null;
+  r[5] = s>=2 ? (last==='B'?'P':'B') : null;
+
+  // =========================
+  // 🔥 สายใหม่ (ไม่ซ้ำ logic เดิม)
+  // =========================
+
+  // ===== 7. MOMENTUM (3/4 ล่าสุด) =====
+  let last4 = road.slice(-4);
+  let p4 = last4.filter(x=>x==='P').length;
+  let b4 = last4.filter(x=>x==='B').length;
+
+  if(p4 > b4) r[6] = 'P';
+  else if(b4 > p4) r[6] = 'B';
+  else r[6] = null;
+
+
+  // ===== 8. STREAK EXHAUSTION =====
+  // ถ้า streak ยาว >=3 → มีโอกาส “หมดแรง”
+  if(s >= 3){
+    r[7] = (last === 'B') ? 'P' : 'B';
+  }else{
+    r[7] = null;
+  }
+
+
+  // ===== 9. VOLATILITY SWITCH =====
+  // ดูการสลับ 6 ตาล่าสุด
+  let switches = 0;
+  for(let i=road.length-6;i<road.length-1;i++){
+    if(i>=0 && road[i] !== road[i+1]) switches++;
+  }
+
+  // ถ้าสลับบ่อย = chop → follow chop
+  if(switches >= 3){
+    r[8] = last ? (last==='B'?'P':'B') : null;
+  }
+  // ถ้านิ่ง = trend → follow trend
+  else{
+    r[8] = last || null;
+  }
+
+// ===== 10. LAST 2 PATTERN =====
+let last2 = road.slice(-2).join('');
+if(last2 === 'PP') r[9] = 'B';
+else if(last2 === 'BB') r[9] = 'P';
+else r[9] = last || null;
+
+// ===== 11. ALT MIRROR =====
+if(road.length >= 2){
+  r[10] = road[road.length-2];
+}else r[10] = null;
+
+// ===== 12. 5-STEP DOMINANCE =====
+let last5 = road.slice(-5);
+let p5 = last5.filter(x=>x==='P').length;
+let b5 = last5.filter(x=>x==='B').length;
+r[11] = p5 > b5 ? 'P' : b5 > p5 ? 'B' : null;
+
+// ===== 13. GAP BREAK =====
+r[12] = (s >= 4) ? (last==='B'?'P':'B') : null;
+
+// ===== 14. EVEN-ODD INDEX =====
+r[13] = road.length % 2 === 0 ? 'P' : 'B';
+
+// ===== 15. FIRST DOMINANCE =====
+let first10 = road.slice(0,10);
+let pf = first10.filter(x=>'P').length;
+let bf = first10.filter(x=>'B').length;
+r[14] = pf > bf ? 'P' : bf > pf ? 'B' : null;
+
+// ===== 16. LAST CHANGE MEMORY =====
+let changeIdx = -1;
+for(let i=road.length-1;i>0;i--){
+  if(road[i]!==road[i-1]){ changeIdx=i; break; }
+}
+r[15] = changeIdx !== -1 ? road[changeIdx] : null;
+
+// ===== 17. REVERSE LAST 3 =====
+let last3 = road.slice(-3);
+if(last3.length===3){
+  let p3 = last3.filter(x=>x==='P').length;
+  let b3 = last3.filter(x=>x==='B').length;
+  r[16] = p3 > b3 ? 'B' : 'P';
+}else r[16]=null;
+
+// ===== 18. DELAY FOLLOW =====
+r[17] = road.length>=3 ? road[road.length-3] : null;
+
+// ===== 19. DOUBLE SWITCH =====
+if(road.length>=3){
+  let a=road[road.length-3];
+  let b=road[road.length-2];
+  let c=road[road.length-1];
+  if(a!==b && b!==c) r[18]=c;
+  else r[18]=null;
+}
+
+// ===== 20. TREND LOCK =====
+r[19] = s>=2 ? last : null;
+
+// ===== 21. TREND BREAK FAST =====
+r[20] = s===2 ? (last==='B'?'P':'B') : null;
+
+// ===== 22. MICRO TREND =====
+let last6 = road.slice(-6);
+let p6 = last6.filter(x=>x==='P').length;
+let b6 = last6.filter(x=>x==='B').length;
+r[21] = p6 > b6 ? 'P' : b6 > p6 ? 'B' : null;
+
+// ===== 23. RANDOM FILTERED =====
+r[22] = Math.random() < 0.5 ? 'P' : 'B';
+
+// ===== 24. ANTI-STREAK =====
+r[23] = s>=5 ? (last==='B'?'P':'B') : null;
+
+// ===== 25. MIRROR LAST =====
+r[24] = last ? (last==='B'?'P':'B') : null;
+
+// ===== 26. STREAK PARITY =====
+r[25] = s % 2 === 0 ? last : (last==='B'?'P':'B');
+
+// ===== 27. WINDOW 8 =====
+let last8 = road.slice(-8);
+let p8 = last8.filter(x=>x==='P').length;
+let b8 = last8.filter(x=>x==='B').length;
+r[26] = p8 > b8 ? 'P' : b8 > p8 ? 'B' : null;
+
+// ===== 28. DELAY 4 =====
+r[27] = road.length>=4 ? road[road.length-4] : null;
+
+// ===== 29. STREAK CUT HALF =====
+r[28] = s>=3 ? null : last;
+
+// ===== 30. CHAOS BALANCE =====
+let total = road.length;
+if(total){
+  let ratio = b / total;
+  r[29] = ratio > 0.5 ? 'P' : 'B';
+}else r[29]=null;
+  
+// ===== weight boost (optional) =====
+if(r[6]) r[6] = Math.random() < 0.6 ? r[6] : null; // momentum ลด noise
+if(r[7]) r[7] = Math.random() < 0.7 ? r[7] : null; // exhaustion คัดจังหวะ
+
+// กัน null ทุกช่อง
+for(let i=0;i<30;i++){
+  if(r[i] !== 'P' && r[i] !== 'B'){
+    r[i] = forceBetDecision();
+  }
+}
+
+  return r;
+}
+
+/* ===== STATE BUILDER ===== */
+function getState(history){
+
+  if(history.length < 6) return "INIT";
+
+  const last = history[history.length-1];
+
+  // ===== STREAK =====
+  let streak = 1;
+  for(let i=history.length-2;i>=0;i--){
+    if(history[i]===last) streak++;
+    else break;
+  }
+  let streakLevel = streak>=3 ? "3P" : streak.toString();
+
+  // ===== SWITCH RATE (6 ล่าสุด) =====
+  let switches = 0;
+  for(let i=history.length-6;i<history.length-1;i++){
+    if(i>=0 && history[i]!==history[i+1]) switches++;
+  }
+  let switchLevel = switches>=3 ? "HIGH" : "LOW";
+
+  // ===== BANKER RATIO (20 ล่าสุด) =====
+  let sample = history.slice(-20);
+  let countB = sample.filter(x=>x==='B').length;
+  let ratio = countB / sample.length;
+  let ratioLevel =
+    ratio>0.55 ? "BHIGH" :
+    ratio<0.45 ? "PHIGH" :
+    "MID";
+
+  return `${last}_${streakLevel}_${switchLevel}_${ratioLevel}`;
+}
+
+
+function stateAssistDecision(){
+  if(road.length < 3) return null;
+
+  let last = road[road.length-1];
+  if(last !== 'P' && last !== 'B') return null;
+
+  let t = stateEngine.transition[last];
+  let total = t.P + t.B;
+
+  if(total < 6) return null;
+
+  return t.P >= t.B ? 'P' : 'B';
+}
+
+/* ===== ✅ วางตรงนี้ ===== */
+function forceBetDecision(){
+
+  // 1. ใช้ DQN เป็นหลัก
+  if(dqn.lastAction === 'P' || dqn.lastAction === 'B'){
+    return dqn.lastAction;
+  }
+
+  // 2. ใช้ Line ที่แม่นสุด
+  let active = lines.filter(l => (l.bet==='P'||l.bet==='B') && (l.hit+l.miss));
+
+  if(active.length){
+    let best = active.sort((a,b)=>b.pct-a.pct)[0];
+    if(best.bet) return best.bet;
+  }
+
+  // 3. fallback สุดท้าย
+  return null;
+}
+
+
+function render(){
+  roadEl.innerHTML=road.map(r=>`<div class="dot ${r}"></div>`).join('');
+  lines.forEach(l=>{let t=l.hit+l.miss;l.pct=(l.bet&&t)?Math.round(l.hit/t*100):0;});
+
+  let active=lines.filter(l=>(l.bet==='B'||l.bet==='P')&&(l.hit+l.miss));
+  let maxAcc=active.length?Math.max(...active.map(l=>l.pct)):0;
+  let blinkLines=active.filter(l=>l.pct===maxAcc);
+  let blinkP=blinkLines.filter(l=>l.bet==='P').length;
+  let blinkB=blinkLines.filter(l=>l.bet==='B').length;
+
+  summary.innerHTML=
+  `📊 <b>เงื่อนไข</b><br>
+   สาย % สูงสุด = ${maxAcc}%<br>
+   จำนวนสาย Blink = ${blinkLines.length} สาย<br>
+   Blink P = ${blinkP} | Blink B = ${blinkB}<br><hr>
+   TOTAL = ${road.length} ตา<br>
+   P = ${road.filter(x=>x==='P').length}
+   | B = ${road.filter(x=>x==='B').length}
+   | T = ${road.filter(x=>x==='T').length}`;
+// ===== แสดง DQN =====
+let html = lines.map((l,i)=>{
+  let betTxt='–',betCls='betN';
+  if(l.bet==='B'){betTxt='B';betCls='betB'}
+  if(l.bet==='P'){betTxt='P';betCls='betP'}
+  let blink=(l.bet&&(l.hit+l.miss)&&l.pct===maxAcc);
+
+  return `<div class="line ${blink?'best':''}">
+    สาย ${i+1}: แทง <span class="${betCls} ${blink?'blink':''}">${betTxt}</span> |
+    ✔ ${l.hit} ❌ ${l.miss} | ${l.pct}%
+    <div class="history">
+    ${l.history.map(x=>x==='H'
+    ?'<span class="mark hit">✔</span>'
+    :'<span class="mark miss">✖</span>').join('')}
+    </div>
+  </div>`;
+}).join('');
+
+// 🔥 วางตรงนี้
+let adviceText = '';
+let adviceColor = '#ffd86b';
+
+if(dqn.stats.total === 0){
+
+  adviceText = 'ยังไม่มีข้อมูล กรุณาจดผลก่อนเริ่มระบบ';
+  adviceColor = '#888';
+
+}
+else if(dqn.stats.pct > 50){
+
+  adviceText = 'ตานี้ควรเล่นตาม';
+  adviceColor = '#4dffb0';
+
+}
+else if(dqn.stats.pct < 50){
+
+  adviceText = 'ตานี้ควรเล่นสวน';
+  adviceColor = '#ff6b6b';
+
+}
+else{
+
+  adviceText = '50% กลางพอดี จะหยุดรอ หรือใช้ตัวช่วยด้านล่าง ผู้เล่นตัดสินใจเอง';
+  adviceColor = '#ffd86b';
+
+}
+document.getElementById('dqnBox').innerHTML = `
+🧠 STATE AWARE MODE
+<br>
+แทง <span style="font-size:26px">
+${road.length === 0 ? '-' : forceBetDecision()}
+</span>
+<br>
+✔ ${dqn.stats.hit} |
+❌ ${dqn.stats.miss} |
+%
+<span style="
+color:${dqn.stats.pct>=60?'#4dffb0':
+        dqn.stats.pct>=50?'#ffd86b':'#ff6b6b'};
+">
+${dqn.stats.pct}%
+</span>
+
+<br>
+LINE: <span style="
+color:${dqn.stats.pct>=60?'#4dffb0':
+        dqn.stats.pct>=50?'#ffd86b':'#ff6b6b'};
+">
+${dqn.lastLine !== null ? dqn.lastLine + 1 : '-'}
+</span>
+
+<br><br>
+
+<div style="
+font-size:18px;
+font-weight:800;
+color:${adviceColor};
+margin-bottom:8px;
+">
+${adviceText}
+</div>
+
+<div style="
+display:grid;
+grid-template-columns:repeat(12,22px);
+gap:8px;
+justify-content:center;
+margin-top:8px;
+">
+${dqn.stats.history.map(x=>x==='H'
+  ?'<div class="mark hit">✔</div>'
+  :'<div class="mark miss">✖</div>'
+).join('')}
+</div>
+
+<br><br>
+
+State: ${dqn.lastState || 'INIT'}
+<br>
+
+${
+(dqn.lastState !== null && dqn.lastLine !== null && dqn.q[dqn.lastState])
+? `Q(LINE) = ${dqn.q[dqn.lastState][dqn.lastLine]?.toFixed(2) || 0}`
+: 'Q = 0'
+}
+
+`;
+
+let assistBox = document.getElementById("assistBox");
+
+if(Math.round(dqn.stats.pct) === 50){
+
+  let assist = stateAssistDecision();
+
+  if(assist){
+
+    assistBox.style.display = "block";
+
+    assistBox.innerHTML = `
+    ⚖ 50% BALANCE MODE
+    <br><br>
+    ผู้ช่วยแนะนำ:
+    <span style="
+      font-size:24px;
+      color:${assist === 'P' ? '#4da3ff' : '#ff6b6b'};
+    ">
+    ${assist}
+    </span>
+    <br><br>
+    ใช้ข้อมูล Markov Transition ช่วยตัดสิน
+    `;
+
+  }else{
+    assistBox.style.display = "none";
+  }
+
+}else{
+  assistBox.style.display = "none";
+}
+
+/* 🔥 ต้องอยู่นอก if เสมอ */
+linesEl.innerHTML = html;
+}
+
+</script>
+
+</body>
+</html>
